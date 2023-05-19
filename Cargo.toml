@@ -1,0 +1,9 @@
+[package]
+name = "rcc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.2.7", features = ["derive"] }
+rclone-crypt = { git = "https://github.com/br0kenpixel/rclone-crypt-rs", version = "0.1.5" }
+spinoff = "0.7.0"
