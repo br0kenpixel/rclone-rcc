@@ -1,10 +1,7 @@
 use chrono::{DateTime, Utc};
 use rclone_crypt::cipher::Cipher;
 use spinoff::{spinners, Color, Spinner};
-use std::{
-    fs::{self, FileType},
-    path::PathBuf,
-};
+use std::{fs, path::PathBuf};
 
 pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
     if !dir.is_dir() {

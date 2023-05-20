@@ -1,4 +1,3 @@
-#![allow(unused, dead_code)]
 mod args;
 mod commands;
 

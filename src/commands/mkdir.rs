@@ -1,10 +1,6 @@
-use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
+use rclone_crypt::cipher::Cipher;
 use spinoff::{spinners, Color, Spinner};
-use std::{
-    fs,
-    io::{stdout, Read, Write},
-    path::PathBuf,
-};
+use std::{fs, path::PathBuf};
 
 pub fn mkdir(dir: PathBuf, path: PathBuf, password: String, salt: Option<String>) -> i32 {
     if !dir.is_dir() {

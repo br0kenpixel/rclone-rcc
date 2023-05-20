@@ -1,5 +1,5 @@
 use rclone_crypt::cipher::Cipher;
-use spinoff::{spinner, spinners, Color, Spinner};
+use spinoff::{spinners, Color, Spinner};
 use std::path::PathBuf;
 
 pub fn cryptdecode(
@@ -29,7 +29,7 @@ pub fn cryptdecode(
             println!("{}\t{}", filename.display(), result.display());
             0
         }
-        Err(e) => {
+        Err(_) => {
             eprintln!("{}\tFailed to {}", filename.display(), operation);
             1
         }
