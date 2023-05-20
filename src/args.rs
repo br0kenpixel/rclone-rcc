@@ -151,4 +151,16 @@ pub enum Commands {
         /// An optional salt
         salt: Option<String>,
     },
+    /// Encrypts/Decrypts file names and paths
+    Cryptdecode {
+        /// File name or path to encrypt/decrypt
+        filename: PathBuf,
+        /// Decryption password
+        password: String,
+        /// An optional salt
+        salt: Option<String>,
+        /// Reverse (encrypt mode)
+        #[arg(long, default_value_t = false)]
+        reverse: bool,
+    },
 }

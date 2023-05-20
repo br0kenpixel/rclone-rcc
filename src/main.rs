@@ -88,6 +88,12 @@ fn main() {
             password,
             salt,
         } => commands::mkdir(dir, path, password, salt),
+        Commands::Cryptdecode {
+            filename,
+            password,
+            salt,
+            reverse,
+        } => commands::cryptdecode(filename, password, salt, reverse),
     };
 
     exit(exit_code);

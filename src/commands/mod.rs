@@ -1,5 +1,6 @@
 mod cat;
 mod copy;
+mod cryptdecode;
 mod head;
 mod ls;
 mod mkdir;
@@ -12,6 +13,7 @@ mod touch;
 
 pub use cat::cat;
 pub use copy::cp;
+pub use cryptdecode::cryptdecode;
 pub use head::head;
 pub use ls::ls;
 pub use mkdir::mkdir;

@@ -47,6 +47,10 @@ Unfortunately it seems like cross-compiling will not be possible due to sodium b
     - A unix-like `touch` command.
 - mkdir
     - Creates directories
+- cryptdecode
+    - Same as [rclone's `cryptdecode`](https://rclone.org/commands/rclone_cryptdecode/).
+    - **Notes**: Unlike `rclone`, this command does not require a path (or in fact any kind of access) to
+    the encrypted directory. It just needs the password and (optionally) the salt.
 
 ## Limitations
 - Currently it is not possible to copy/move files between two encrypted directories. If you want to do this, you need to temporarily copy/move said file to a location outside the encrypted directory, then copy/move it into the destination (encrypted) directory.
