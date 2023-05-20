@@ -20,9 +20,10 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
 
     let spinner = Spinner::new(spinners::Dots, "Decrypting file names...", Color::White);
 
-    let files_iter = fs::read_dir(dir)
+    let files_iter = fs::read_dir(&dir)
         .unwrap()
         .map(Result::unwrap)
+        .filter(|entry| entry.file_type().unwrap().is_file())
         .map(|entry| entry.file_name().into_string().unwrap());
     let mut files = Vec::new();
 
@@ -35,14 +36,17 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
             }
         };
 
-        files.push(decrypted_name);
+        files.push((dir.join(entry), decrypted_name));
     }
 
     spinner.success("Listing");
-    println!();
 
     for file in files {
-        println!("{file}");
+        let real_path = file.0;
+        let file = file.1;
+        let size = fs::metadata(real_path).unwrap().len();
+
+        println!("{:>9} {file}", size);
     }
 
     0
