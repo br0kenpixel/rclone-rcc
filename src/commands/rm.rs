@@ -8,7 +8,7 @@ pub fn rm(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) -
         return 1;
     }
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cypher...", Color::White);
+    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
     let cipher = match Cipher::new(password, salt) {
         Ok(c) => c,
         Err(e) => {
@@ -16,7 +16,7 @@ pub fn rm(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) -
             return 1;
         }
     };
-    spinner.success("Created cypher");
+    spinner.success("Created cipher");
 
     let spinner = Spinner::new(spinners::Dots, "Removing...", Color::White);
     let encrypted_path = cipher.encrypt_path(&file).unwrap();

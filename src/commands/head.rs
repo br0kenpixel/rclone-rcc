@@ -3,7 +3,7 @@ use spinoff::{spinners, Color, Spinner};
 use std::{fs, io::Read, path::PathBuf};
 
 pub fn head(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>, n: usize) -> i32 {
-    let spinner = Spinner::new(spinners::Dots, "Creating cypher...", Color::White);
+    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
     let cipher = match Cipher::new(password, salt) {
         Ok(c) => c,
         Err(e) => {
@@ -11,7 +11,7 @@ pub fn head(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>,
             return 1;
         }
     };
-    spinner.success("Created cypher");
+    spinner.success("Created cipher");
 
     if !dir.is_dir() {
         eprintln!("invalid directory");

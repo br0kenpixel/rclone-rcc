@@ -23,7 +23,7 @@ pub fn cp(
         If `reverse` is `true`, the file should be copied from outside the encrypted directory into it.
     */
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cypher...", Color::White);
+    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
     let cipher = match Cipher::new(password, salt) {
         Ok(c) => c,
         Err(e) => {
@@ -31,7 +31,7 @@ pub fn cp(
             return 1;
         }
     };
-    spinner.success("Created cypher");
+    spinner.success("Created cipher");
 
     if !reverse {
         // Check if we can access the encrypted directory and the source file exists in it.
