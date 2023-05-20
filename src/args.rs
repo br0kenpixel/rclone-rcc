@@ -21,6 +21,15 @@ pub enum Commands {
         /// An optional salt
         salt: Option<String>,
     },
+    /// List directories in an encrypted directory
+    Lsd {
+        /// Directory to list
+        dir: PathBuf,
+        /// Decryption password
+        password: String,
+        /// An optional salt
+        salt: Option<String>,
+    },
     /// A Unix-like cat command
     Cat {
         /// Path to encrypted directory

@@ -20,6 +20,11 @@ fn main() {
             password,
             salt,
         } => commands::ls(dir, password, salt),
+        Commands::Lsd {
+            dir,
+            password,
+            salt,
+        } => commands::lsd(dir, password, salt),
         Commands::Cat {
             dir,
             file,
