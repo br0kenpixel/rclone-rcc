@@ -82,6 +82,12 @@ fn main() {
             password,
             salt,
         } => commands::sizeof(dir, file, password, salt),
+        Commands::Mkdir {
+            dir,
+            path,
+            password,
+            salt,
+        } => commands::mkdir(dir, path, password, salt),
     };
 
     exit(exit_code);

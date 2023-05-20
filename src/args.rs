@@ -140,4 +140,15 @@ pub enum Commands {
         /// An optional salt
         salt: Option<String>,
     },
+    /// Make directories
+    Mkdir {
+        /// Path to encrypted directory
+        dir: PathBuf,
+        /// Path inside enrypted directory
+        path: PathBuf,
+        /// Decryption password
+        password: String,
+        /// An optional salt
+        salt: Option<String>,
+    },
 }

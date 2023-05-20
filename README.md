@@ -45,6 +45,8 @@ Unfortunately it seems like cross-compiling will not be possible due to sodium b
     - A unix-like `tail` command.
 - touch
     - A unix-like `touch` command.
+- mkdir
+    - Creates directories
 
 ## Limitations
 - Currently it is not possible to copy/move files between two encrypted directories. If you want to do this, you need to temporarily copy/move said file to a location outside the encrypted directory, then copy/move it into the destination (encrypted) directory.
@@ -54,4 +56,3 @@ Unfortunately it seems like cross-compiling will not be possible due to sodium b
 
     rcc cp second/encrypted/dir some/encrypted/file.txt /tmp/file.txt mypass123 mysalt123 --reverse
     ```
-- Creating directories is not supported yet.
