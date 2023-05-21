@@ -104,7 +104,9 @@ fn main() {
             mnt_point,
             password,
             salt,
-        } => commands::mount(dir, mnt_point, password, salt),
+            volname,
+            read_only,
+        } => commands::mount(dir, mnt_point, password, salt, volname, read_only),
     };
 
     exit(exit_code);

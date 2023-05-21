@@ -14,12 +14,25 @@ use std::{
     path::PathBuf,
 };
 
+macro_rules! into_fuse_err {
+    ($e: expr, $error: expr) => {
+        $e.ok_or($error)?
+    };
+}
+
 struct CryptFs {
     origin_path: Option<PathBuf>,
     cipher: Option<Cipher>,
 }
 
-pub fn mount(dir: PathBuf, mnt_point: PathBuf, password: String, salt: Option<String>) -> i32 {
+pub fn mount(
+    dir: PathBuf,
+    mnt_point: PathBuf,
+    password: String,
+    salt: Option<String>,
+    volname: Option<String>,
+    _read_only: bool,
+) -> i32 {
     if !dir.is_dir() {
         eprintln!("invalid directory");
         return 1;
@@ -27,6 +40,12 @@ pub fn mount(dir: PathBuf, mnt_point: PathBuf, password: String, salt: Option<St
 
     if !mnt_point.is_dir() {
         eprintln!("invalid mount point");
+        return 1;
+    }
+
+    let volname = volname.unwrap_or(gen_volume_name(&dir));
+    if !volname.chars().all(|c| c.is_ascii_alphanumeric()) {
+        eprintln!("invalid volume name");
         return 1;
     }
 
@@ -41,11 +60,6 @@ pub fn mount(dir: PathBuf, mnt_point: PathBuf, password: String, salt: Option<St
     spinner.success("Created cipher");
 
     let spinner = Spinner::new(spinners::Dots, "Mounting...", Color::White);
-
-    let mut volume_name = dir.file_stem().unwrap().to_str().unwrap().to_owned();
-    if volume_name.contains(' ') {
-        volume_name = volume_name.replace(' ', "-");
-    }
     let mnt_point = mnt_point.canonicalize().unwrap();
 
     let opts = vec![
@@ -53,7 +67,7 @@ pub fn mount(dir: PathBuf, mnt_point: PathBuf, password: String, salt: Option<St
         OsString::from("-f"),
         OsString::from("-d"),
         OsString::from("-o"),
-        OsString::from(format!("volname={}", volume_name)),
+        OsString::from(format!("volname={}", volname)),
         OsString::from("-o"),
         OsString::from("ro"),
     ];
@@ -80,6 +94,20 @@ pub fn mount(dir: PathBuf, mnt_point: PathBuf, password: String, salt: Option<St
     0
 }
 
+fn gen_volume_name<P: AsRef<Path>>(dir: P) -> String {
+    let mut volume_name = dir
+        .as_ref()
+        .file_stem()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_owned();
+    if volume_name.contains(' ') {
+        volume_name = volume_name.replace(' ', "-");
+    }
+    volume_name
+}
+
 impl CryptFs {
     fn get_cipher(&self) -> &Cipher {
         self.cipher.as_ref().unwrap()
@@ -91,6 +119,24 @@ impl CryptFs {
 
     fn real_path<P: AsRef<Path>>(&self, other: P) -> PathBuf {
         self.get_origin().join(other)
+    }
+
+    /// Returns the real path to a file/folder inside an encrypted directory.
+    /// `to` - "Real" (encrypted) file/path
+    /// If `to` starts with a `/`, it will be stripped.
+    fn get_encrypted_path<P: AsRef<Path>>(&self, to: P) -> Option<PathBuf> {
+        let to = to.as_ref().strip_prefix("/").unwrap();
+        let encrypted = self.get_cipher().encrypt_path(to).ok();
+        Some(self.real_path(encrypted.as_ref()?))
+    }
+
+    /// Returns the fake path to a file/folder inside an encrypted directory.
+    /// `to` - "Fake" (decrypted) file/path
+    /// If `to` starts with a `/`, it will be stripped.
+    fn get_decrypted_path<P: AsRef<Path>>(&self, to: P) -> PathBuf {
+        let to = to.as_ref().strip_prefix("/").unwrap();
+        let to = self.get_cipher().decrypt_path(to).unwrap();
+        self.real_path(to)
     }
 }
 
@@ -104,13 +150,7 @@ impl Filesystem for CryptFs {
                 stat.st_nlink = 3;
             }
             other => {
-                let encrypted = match self.get_cipher().encrypt_path(&PathBuf::from(&other[1..])) {
-                    Ok(path) => path,
-                    Err(_) => {
-                        return Err(Errno::ENOENT);
-                    }
-                };
-                let real_path = self.real_path(encrypted);
+                let real_path = into_fuse_err!(self.get_encrypted_path(other), Errno::ENOENT);
 
                 if real_path.is_file() {
                     stat.st_mode = SFlag::S_IFREG.bits() | 0o644;
@@ -134,11 +174,10 @@ impl Filesystem for CryptFs {
         _offset: u64,
         _file_info: FileInfo,
     ) -> fuse_rs::Result<Vec<DirEntry>> {
-        let path = path.strip_prefix("/").unwrap();
         let real_path = if path == Path::new("/") {
-            self.real_path("")
+            self.get_origin().clone()
         } else {
-            self.real_path(self.get_cipher().encrypt_path(path).unwrap())
+            into_fuse_err!(self.get_encrypted_path(path), Errno::ENOENT)
         };
 
         Ok(real_path
@@ -146,11 +185,7 @@ impl Filesystem for CryptFs {
             .unwrap()
             .map(Result::unwrap)
             .map(|entry| entry.file_name().to_str().unwrap().to_owned())
-            .map(|entry| {
-                self.get_cipher()
-                    .decrypt_path(Path::new(entry.as_str()))
-                    .unwrap()
-            })
+            .map(|entry| self.get_decrypted_path(entry))
             .map(|entry| DirEntry {
                 name: entry.into_os_string(),
                 metadata: None,
@@ -175,10 +210,7 @@ impl Filesystem for CryptFs {
         offset: u64,
         _file_info: FileInfo,
     ) -> fuse_rs::Result<usize> {
-        let path = path.strip_prefix("/").unwrap();
-        let real_path = self
-            .get_origin()
-            .join(self.get_cipher().encrypt_path(path).unwrap());
+        let real_path = into_fuse_err!(self.get_encrypted_path(path), Errno::ENOENT);
 
         let file = OpenOptions::new().read(true).open(real_path).unwrap();
         let mut reader = EncryptedReader::new_with_cipher(file, self.get_cipher().clone()).unwrap();

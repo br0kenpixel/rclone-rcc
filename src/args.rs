@@ -183,5 +183,9 @@ pub enum Commands {
         password: String,
         /// An optional salt
         salt: Option<String>,
+        /// Name of the virtual drive
+        volname: Option<String>,
+        #[arg(long, default_value_t = false)]
+        read_only: bool,
     },
 }
