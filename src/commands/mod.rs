@@ -5,6 +5,8 @@ mod head;
 mod ls;
 mod lsd;
 mod mkdir;
+#[cfg(feature = "mount")]
+mod mount;
 mod move_;
 mod read;
 mod rm;
@@ -19,6 +21,8 @@ pub use head::head;
 pub use ls::ls;
 pub use lsd::lsd;
 pub use mkdir::mkdir;
+#[cfg(feature = "mount")]
+pub use mount::mount;
 pub use move_::move_;
 pub use read::read;
 pub use rm::rm;

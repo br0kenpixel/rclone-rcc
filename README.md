@@ -53,6 +53,11 @@ Unfortunately it seems like cross-compiling will not be possible due to sodium b
     the encrypted directory. It just needs the password and (optionally) the salt.
 - lsd
     - Same as [rclone's `lsd`](https://rclone.org/commands/rclone_lsd/) but *without* support for recursing.
+- mount
+    - **Requires feature `mount` to be enabled when building.**
+    - **Requires Unix-based OS.**
+    - Allows mounting encrypted folders as virtual drives using [`FUSE`](https://github.com/libfuse/libfuse).
+    - **Notes**: A custom fork of [`fuse-rs`](https://github.com/br0kenpixel/fuse-rs) and [`libfuse-sys`](https://github.com/br0kenpixel/libfuse-sys) are being used since the original crates use an outdated version of `bindgen` which causes compilation errors on macOS.
 
 ## Limitations
 - Currently it is not possible to copy/move files between two encrypted directories. If you want to do this, you need to temporarily copy/move said file to a location outside the encrypted directory, then copy/move it into the destination (encrypted) directory.
@@ -62,3 +67,4 @@ Unfortunately it seems like cross-compiling will not be possible due to sodium b
 
     rcc cp second/encrypted/dir some/encrypted/file.txt /tmp/file.txt mypass123 mysalt123 --reverse
     ```
+- Since I'm not yet sure about the stability of mounts, the FUSE driver does not allow write operations for now. But write support is definitely planned.

@@ -98,6 +98,13 @@ fn main() {
             salt,
             reverse,
         } => commands::cryptdecode(filename, password, salt, reverse),
+        #[cfg(feature = "mount")]
+        Commands::Mount {
+            dir,
+            mnt_point,
+            password,
+            salt,
+        } => commands::mount(dir, mnt_point, password, salt),
     };
 
     exit(exit_code);

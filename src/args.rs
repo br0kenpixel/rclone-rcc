@@ -172,4 +172,16 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         reverse: bool,
     },
+    #[cfg(feature = "mount")]
+    /// Mount an encrypted folder as a virtual drive
+    Mount {
+        /// Path to encrypted directory
+        dir: PathBuf,
+        /// Mount point
+        mnt_point: PathBuf,
+        /// Decryption password
+        password: String,
+        /// An optional salt
+        salt: Option<String>,
+    },
 }

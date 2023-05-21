@@ -1,6 +1,6 @@
 [package]
 name = "rcc"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 
 [dependencies]
@@ -8,3 +8,12 @@ chrono = "0.4.24"
 clap = { version = "4.2.7", features = ["derive"] }
 rclone-crypt = { git = "https://github.com/br0kenpixel/rclone-crypt-rs", version = "0.1.5" }
 spinoff = "0.7.0"
+fuse-rs = { git = "https://github.com/br0kenpixel/fuse-rs", version = "0.0.1", optional = true }
+nix = { version = "0.17.0", default_features = false, optional = true }
+
+[features]
+#default = ["mount"]
+mount = ["dep:fuse-rs", "dep:nix"]
+
+[patch.crates-io]
+libfuse-sys = { git = "https://github.com/br0kenpixel/libfuse-sys" }
