@@ -22,7 +22,7 @@ rcc cat path/to/encrypted/dir some/encrypted/file.txt mypass123 mysalt123
 ```
 
 ## Cross-compilation
-Unfortunately it seems like cross-compiling will not be possible due to sodium being used by the library.
+Cross-compilation is possible, as long as you're not trying to compile with the `mount` feature enabled.
 
 ## Supported commands
 - cat

@@ -11,3 +11,7 @@ target/
 
 # macOS
 .DS_Store
+
+# My cross-compilation scripts
+build-tools/
+builds/
