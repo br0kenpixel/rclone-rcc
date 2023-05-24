@@ -32,7 +32,7 @@ pub fn mount(
     password: String,
     salt: Option<String>,
     volname: Option<String>,
-    _read_only: bool,
+    read_only: bool,
 ) -> i32 {
     if !dir.is_dir() {
         eprintln!("invalid directory");
@@ -55,15 +55,18 @@ pub fn mount(
     let spinner = Spinner::new(spinners::Dots, "Mounting...", Color::White);
     let mnt_point = mnt_point.canonicalize().unwrap();
 
-    let opts = vec![
+    let mut opts = vec![
         OsString::from("-s"),
         OsString::from("-f"),
         OsString::from("-d"),
         OsString::from("-o"),
         OsString::from(format!("volname={}", volname)),
-        OsString::from("-o"),
-        OsString::from("ro"),
     ];
+
+    if read_only {
+        opts.extend(vec![OsString::from("-o"), OsString::from("ro")]);
+    }
+
     static mut FS: CryptFs = CryptFs {
         origin_path: None,
         cipher: None,
