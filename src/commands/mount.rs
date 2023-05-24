@@ -1,4 +1,5 @@
 #![allow(clippy::unused_io_amount)]
+use crate::macros::create_cipher;
 use fuse_rs::{
     fs::{DirEntry, FileInfo, FileStat, OpenFileInfo},
     Filesystem,
@@ -49,15 +50,7 @@ pub fn mount(
         return 1;
     }
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password, salt) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password, salt);
 
     let spinner = Spinner::new(spinners::Dots, "Mounting...", Color::White);
     let mnt_point = mnt_point.canonicalize().unwrap();

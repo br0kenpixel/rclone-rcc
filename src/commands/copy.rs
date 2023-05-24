@@ -1,3 +1,4 @@
+use crate::macros::create_cipher;
 use rclone_crypt::{
     cipher::Cipher,
     stream::{EncryptedReader, EncryptedWriter},
@@ -23,15 +24,7 @@ pub fn cp(
         If `reverse` is `true`, the file should be copied from outside the encrypted directory into it.
     */
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password, salt) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password, salt);
 
     if !reverse {
         // Check if we can access the encrypted directory and the source file exists in it.

@@ -1,3 +1,4 @@
+use crate::macros::create_cipher;
 use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
 use spinoff::{spinners, Color, Spinner};
 use std::{fs, io::Read, path::PathBuf};
@@ -8,15 +9,7 @@ pub fn sizeof(dir: PathBuf, file: PathBuf, password: String, salt: Option<String
         return 1;
     }
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password.clone(), salt.clone()) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password.clone(), salt.clone());
 
     let spinner = Spinner::new(spinners::Dots, "Decrypting...", Color::White);
     let encrypted_path = cipher.encrypt_path(&file).unwrap();

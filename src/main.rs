@@ -1,5 +1,6 @@
 mod args;
 mod commands;
+mod macros;
 
 use crate::args::Commands;
 use args::Cli;

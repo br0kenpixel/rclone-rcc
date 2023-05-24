@@ -1,3 +1,4 @@
+use crate::macros::create_cipher;
 use rclone_crypt::cipher::Cipher;
 use spinoff::{spinners, Color, Spinner};
 use std::path::PathBuf;
@@ -8,15 +9,7 @@ pub fn cryptdecode(
     salt: Option<String>,
     reverse: bool,
 ) -> i32 {
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password, salt) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password, salt);
 
     let (result, operation) = if reverse {
         (cipher.encrypt_path(&filename), "encrypt")

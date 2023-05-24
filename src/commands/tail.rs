@@ -1,17 +1,10 @@
+use crate::macros::create_cipher;
 use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
 use spinoff::{spinners, Color, Spinner};
 use std::{fs, io::Read, path::PathBuf};
 
 pub fn tail(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>, n: usize) -> i32 {
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password, salt) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password, salt);
 
     if !dir.is_dir() {
         eprintln!("invalid directory");

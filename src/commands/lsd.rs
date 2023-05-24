@@ -1,3 +1,4 @@
+use crate::macros::create_cipher;
 use chrono::{DateTime, Utc};
 use rclone_crypt::cipher::Cipher;
 use spinoff::{spinners, Color, Spinner};
@@ -9,15 +10,7 @@ pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         return 1;
     }
 
-    let spinner = Spinner::new(spinners::Dots, "Creating cipher...", Color::White);
-    let cipher = match Cipher::new(password, salt) {
-        Ok(c) => c,
-        Err(e) => {
-            spinner.fail(&format!("Failed to create cipher: {e}"));
-            return 1;
-        }
-    };
-    spinner.success("Created cipher");
+    create_cipher!(cipher, password, salt);
 
     let spinner = Spinner::new(spinners::Dots, "Decrypting file names...", Color::White);
 
