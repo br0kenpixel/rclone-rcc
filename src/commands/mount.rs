@@ -1,29 +1,28 @@
 #![allow(clippy::unused_io_amount)]
-use crate::macros::create_cipher;
+use crate::macros::{create_cipher, into_fuse_err, into_fuse_result};
 use fuse_rs::{
     fs::{DirEntry, FileInfo, FileStat, OpenFileInfo},
     Filesystem,
 };
 use nix::{errno::Errno, fcntl::OFlag, sys::stat::SFlag};
-use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
+use rclone_crypt::{
+    cipher::Cipher,
+    stream::{EncryptedReader, EncryptedWriter},
+};
 use spinoff::{spinners, Color, Spinner};
 use std::{
     ffi::OsString,
-    fs::{self, OpenOptions},
-    io::Read,
+    fs::{self, File, OpenOptions},
+    io::{Read, Seek, SeekFrom},
     path::Path,
     path::PathBuf,
 };
 
-macro_rules! into_fuse_err {
-    ($e: expr, $error: expr) => {
-        $e.ok_or($error)?
-    };
-}
-
 struct CryptFs {
     origin_path: Option<PathBuf>,
     cipher: Option<Cipher>,
+    open_files_readonly: Vec<(PathBuf, EncryptedReader<File>)>,
+    _open_files_write: Vec<(PathBuf, EncryptedWriter<File>)>,
 }
 
 pub fn mount(
@@ -45,8 +44,11 @@ pub fn mount(
     }
 
     let volname = volname.unwrap_or(gen_volume_name(&dir));
-    if !volname.chars().all(|c| c.is_ascii_alphanumeric()) {
-        eprintln!("invalid volume name");
+    if !volname
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-')
+    {
+        eprintln!("invalid volume name '{volname}'");
         return 1;
     }
 
@@ -70,6 +72,8 @@ pub fn mount(
     static mut FS: CryptFs = CryptFs {
         origin_path: None,
         cipher: None,
+        open_files_readonly: Vec::new(),
+        _open_files_write: Vec::new(),
     };
     unsafe {
         FS.cipher = Some(cipher);
@@ -130,9 +134,40 @@ impl CryptFs {
     /// `to` - "Fake" (decrypted) file/path
     /// If `to` starts with a `/`, it will be stripped.
     fn get_decrypted_path<P: AsRef<Path>>(&self, to: P) -> PathBuf {
-        let to = to.as_ref().strip_prefix("/").unwrap();
+        let to = to.as_ref().strip_prefix("/").unwrap_or(to.as_ref());
         let to = self.get_cipher().decrypt_path(to).unwrap();
         self.real_path(to)
+    }
+
+    /// Returns the `EncryptedReader<File>` stream for an open file.
+    /// If the file was not opened, `None` is returned.
+    fn get_open_file_readonly<P: AsRef<Path>>(
+        &mut self,
+        file: P,
+    ) -> Option<&mut EncryptedReader<File>> {
+        Some(
+            &mut self
+                .open_files_readonly
+                .iter_mut()
+                .find(|entry| entry.0 == file.as_ref())?
+                .1,
+        )
+    }
+
+    fn close_file_readonly<P: AsRef<Path>>(&mut self, file: P) -> fuse_rs::Result<()> {
+        let file = file.as_ref();
+
+        if self.get_open_file_readonly(file).is_none() {
+            return Err(Errno::EBADF);
+        }
+
+        self.open_files_readonly.retain(|entry| {
+            if entry.0 == file {
+                return false;
+            }
+            true
+        });
+        Ok(())
     }
 }
 
@@ -183,19 +218,26 @@ impl Filesystem for CryptFs {
             .map(|entry| entry.file_name().to_str().unwrap().to_owned())
             .map(|entry| self.get_decrypted_path(entry))
             .map(|entry| DirEntry {
-                name: entry.into_os_string(),
+                name: entry.file_name().unwrap().to_owned(),
                 metadata: None,
                 offset: None,
             })
             .collect())
     }
 
-    fn open(&mut self, _path: &Path, file_info: &mut OpenFileInfo) -> fuse_rs::Result<()> {
+    fn open(&mut self, path: &Path, file_info: &mut OpenFileInfo) -> fuse_rs::Result<()> {
         // force read-only
         if (file_info.flags().unwrap_or(OFlag::empty()) & OFlag::O_ACCMODE) != OFlag::O_RDONLY {
             return Err(Errno::EACCES);
         }
 
+        let real_path = into_fuse_err!(self.get_encrypted_path(path), Errno::ENOENT);
+        let file = into_fuse_result!(OpenOptions::new().read(true).open(&real_path))?;
+        let reader = into_fuse_result!(EncryptedReader::new_with_cipher(
+            file,
+            self.get_cipher().clone()
+        ))?;
+        self.open_files_readonly.push((real_path, reader));
         Ok(())
     }
 
@@ -208,20 +250,25 @@ impl Filesystem for CryptFs {
     ) -> fuse_rs::Result<usize> {
         let real_path = into_fuse_err!(self.get_encrypted_path(path), Errno::ENOENT);
 
-        let file = OpenOptions::new().read(true).open(real_path).unwrap();
-        let mut reader = EncryptedReader::new_with_cipher(file, self.get_cipher().clone()).unwrap();
-        let mut content = Vec::new();
+        let reader = self
+            .get_open_file_readonly(&real_path)
+            .ok_or(Errno::EBADF)?;
+        reader.seek(SeekFrom::Start(offset)).unwrap();
+        let read = into_fuse_result!(reader.read(buf))?;
+        Ok(read)
+    }
 
-        reader.read_to_end(&mut content).unwrap();
-
-        let offset = offset as usize;
-        let cap = if offset + buf.len() > content.len() {
-            content.len() - offset
+    fn release(
+        &mut self,
+        path: &Path,
+        file_info: &mut fuse_rs::fs::ReleaseFileInfo,
+    ) -> fuse_rs::Result<()> {
+        if file_info.flags().unwrap_or(OFlag::empty()) & OFlag::O_ACCMODE == OFlag::O_RDONLY {
+            // close read-only file
+            self.close_file_readonly(path)
         } else {
-            buf.len()
-        };
-
-        (&content[offset..(offset + cap)]).read(buf).unwrap();
-        Ok(cap)
+            // close write stream
+            Err(Errno::EACCES)
+        }
     }
 }

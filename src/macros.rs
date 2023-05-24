@@ -12,4 +12,18 @@ macro_rules! create_cipher {
     };
 }
 
+macro_rules! into_fuse_err {
+    ($e: expr, $error: expr) => {
+        $e.ok_or($error)?
+    };
+}
+
+macro_rules! into_fuse_result {
+    ($e: expr) => {
+        $e.map_err(|err| Errno::from_i32(err.raw_os_error().unwrap_or(0)))
+    };
+}
+
 pub(crate) use create_cipher;
+pub(crate) use into_fuse_err;
+pub(crate) use into_fuse_result;
