@@ -741,7 +741,7 @@ dependencies = [
 
 [[package]]
 name = "rcc"
-version = "0.1.13"
+version = "0.1.14"
 dependencies = [
  "chrono",
  "clap",
@@ -749,12 +749,13 @@ dependencies = [
  "nix",
  "rclone-crypt",
  "spinoff",
+ "users",
 ]
 
 [[package]]
 name = "rclone-crypt"
 version = "0.1.5"
-source = "git+https://github.com/br0kenpixel/rclone-crypt-rs#e73f5e2db4b0dfea1ebb7ce017711d9e10eeb5dc"
+source = "git+https://github.com/br0kenpixel/rclone-crypt-rs#59adb71d8029c5ba781363ec49f880a2b456e1d4"
 dependencies = [
  "aes",
  "anyhow",
@@ -930,6 +931,16 @@ name = "unicode-ident"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15811caf2415fb889178633e7724bad2509101cde276048e013b9def5e51fa0"
+
+[[package]]
+name = "users"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24cc0f6d6f267b73e5a2cadf007ba8f9bc39c6a6f9666f8cf25ea809a153b032"
+dependencies = [
+ "libc",
+ "log",
+]
 
 [[package]]
 name = "utf8parse"

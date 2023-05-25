@@ -5,10 +5,7 @@ use fuse_rs::{
     Filesystem,
 };
 use nix::{errno::Errno, fcntl::OFlag, sys::stat::SFlag};
-use rclone_crypt::{
-    cipher::Cipher,
-    stream::{EncryptedReader, EncryptedWriter},
-};
+use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
 use spinoff::{spinners, Color, Spinner};
 use std::{
     ffi::OsString,
@@ -17,12 +14,12 @@ use std::{
     path::Path,
     path::PathBuf,
 };
+use users::{get_current_gid, get_current_uid};
 
 struct CryptFs {
     origin_path: Option<PathBuf>,
     cipher: Option<Cipher>,
     open_files_readonly: Vec<(PathBuf, EncryptedReader<File>)>,
-    _open_files_write: Vec<(PathBuf, EncryptedWriter<File>)>,
 }
 
 pub fn mount(
@@ -73,7 +70,6 @@ pub fn mount(
         origin_path: None,
         cipher: None,
         open_files_readonly: Vec::new(),
-        _open_files_write: Vec::new(),
     };
     unsafe {
         FS.cipher = Some(cipher);
@@ -179,19 +175,24 @@ impl Filesystem for CryptFs {
             "/" => {
                 stat.st_mode = SFlag::S_IFDIR.bits() | 0o755;
                 stat.st_nlink = 3;
+                stat.st_uid = get_current_uid();
             }
             other => {
                 let real_path = into_fuse_err!(self.get_encrypted_path(other), Errno::ENOENT);
 
+                if !real_path.exists() {
+                    return Err(Errno::ENOENT);
+                }
+
+                stat.st_nlink = 1;
+                stat.st_uid = get_current_uid();
+                stat.st_gid = get_current_gid();
+
                 if real_path.is_file() {
                     stat.st_mode = SFlag::S_IFREG.bits() | 0o644;
-                    stat.st_nlink = 1;
                     stat.st_size = fs::metadata(real_path).unwrap().len() as _;
-                } else if real_path.is_dir() {
-                    stat.st_mode = SFlag::S_IFDIR.bits() | 0o755;
-                    stat.st_nlink = 1;
                 } else {
-                    return Err(Errno::ENOENT);
+                    stat.st_mode = SFlag::S_IFDIR.bits() | 0o755;
                 }
             }
         }
