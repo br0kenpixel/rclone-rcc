@@ -108,6 +108,7 @@ fn main() {
             volname,
             read_only: _,
         } => commands::mount(dir, mnt_point, password, salt, volname, true),
+        Commands::Size { target } => commands::size(target),
     };
 
     exit(exit_code);

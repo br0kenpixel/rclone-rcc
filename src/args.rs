@@ -188,4 +188,6 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         read_only: bool,
     },
+    /// Prints the total size and number of objects in the target directory
+    Size { target: PathBuf },
 }
