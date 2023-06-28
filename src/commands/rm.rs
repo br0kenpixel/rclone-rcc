@@ -8,8 +8,9 @@ pub fn rm(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) -
         eprintln!("invalid directory");
         return 1;
     }
+    let salt = salt.as_deref();
 
-    create_cipher!(cipher, password, salt);
+    create_cipher!(cipher, &password, salt);
 
     let spinner = Spinner::new(spinners::Dots, "Removing...", Color::White);
     let encrypted_path = cipher.encrypt_path(&file).unwrap();

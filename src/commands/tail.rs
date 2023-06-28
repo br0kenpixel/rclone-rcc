@@ -4,7 +4,8 @@ use spinoff::{spinners, Color, Spinner};
 use std::{fs, io::Read, path::PathBuf};
 
 pub fn tail(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>, n: usize) -> i32 {
-    create_cipher!(cipher, password, salt);
+    let salt = salt.as_deref();
+    create_cipher!(cipher, &password, salt);
 
     if !dir.is_dir() {
         eprintln!("invalid directory");

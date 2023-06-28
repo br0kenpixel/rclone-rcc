@@ -9,8 +9,9 @@ pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         eprintln!("invalid directory");
         return 1;
     }
+    let salt = salt.as_deref();
 
-    create_cipher!(cipher, password, salt);
+    create_cipher!(cipher, &password, salt);
 
     let spinner = Spinner::new(spinners::Dots, "Decrypting file names...", Color::White);
 

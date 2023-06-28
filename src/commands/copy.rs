@@ -24,7 +24,8 @@ pub fn cp(
         If `reverse` is `true`, the file should be copied from outside the encrypted directory into it.
     */
 
-    create_cipher!(cipher, password, salt);
+    let salt = salt.as_deref();
+    create_cipher!(cipher, &password, salt);
 
     if !reverse {
         // Check if we can access the encrypted directory and the source file exists in it.

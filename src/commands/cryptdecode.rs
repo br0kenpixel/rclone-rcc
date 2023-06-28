@@ -9,7 +9,8 @@ pub fn cryptdecode(
     salt: Option<String>,
     reverse: bool,
 ) -> i32 {
-    create_cipher!(cipher, password, salt);
+    let salt = salt.as_deref();
+    create_cipher!(cipher, &password, salt);
 
     let (result, operation) = if reverse {
         (cipher.encrypt_path(&filename), "encrypt")
