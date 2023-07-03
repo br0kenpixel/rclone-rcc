@@ -1,5 +1,5 @@
 use crate::macros::create_cipher;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local};
 use rclone_crypt::cipher::Cipher;
 use spinoff::{spinners, Color, Spinner};
 use std::{fs, path::PathBuf};
@@ -41,7 +41,7 @@ pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         let folder = entry.1;
 
         let modtime = fs::metadata(real_path).unwrap().modified().unwrap();
-        let modtime: DateTime<Utc> = modtime.into();
+        let modtime: DateTime<Local> = modtime.into();
         println!(
             "{:>12} {} {} {:>9} {folder}",
             -1,
