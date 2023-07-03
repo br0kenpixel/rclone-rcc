@@ -27,7 +27,7 @@ Cross-compilation is possible, as long as you're not trying to compile with the 
 ## Supported commands
 - cat
     - A unix-like `cat` command.
-- copy
+- cp
     - Copy files from/into encrypted directories
 - head
     - A unix-like `head` command.
@@ -41,6 +41,8 @@ Cross-compilation is possible, as long as you're not trying to compile with the 
     - Deletes files
 - sizeof
     - Counts the size of an encrypted file (files are decrypted first)
+- size
+    - Same as [rclone's `size`](https://rclone.org/commands/rclone_size/) but *without* support for recursing.
 - tail
     - A unix-like `tail` command.
 - touch
