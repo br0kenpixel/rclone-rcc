@@ -49,7 +49,7 @@ pub fn mount(
         return 1;
     }
 
-    create_cipher!(cipher, password, salt);
+    create_cipher!(cipher, &password, salt.as_deref());
 
     let spinner = Spinner::new(spinners::Dots, "Mounting...", Color::White);
     let mnt_point = mnt_point.canonicalize().unwrap();
