@@ -172,6 +172,16 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         reverse: bool,
     },
+    /// Obscures the given password
+    Obscure {
+        /// Text to obscure
+        value: String,
+    },
+    /// Reveals an obscured password
+    Reveal {
+        /// Text to reveal
+        value: String,
+    },
     #[cfg(feature = "mount")]
     /// Mount an encrypted folder as a virtual drive
     Mount {

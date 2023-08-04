@@ -8,7 +8,9 @@ mod mkdir;
 #[cfg(feature = "mount")]
 mod mount;
 mod move_;
+mod obscure;
 mod read;
+mod reveal;
 mod rm;
 mod size;
 mod sizeof;
@@ -25,7 +27,9 @@ pub use mkdir::mkdir;
 #[cfg(feature = "mount")]
 pub use mount::mount;
 pub use move_::move_;
+pub use obscure::obscure;
 pub use read::read;
+pub use reveal::reveal;
 pub use rm::rm;
 pub use size::size;
 pub use sizeof::sizeof;

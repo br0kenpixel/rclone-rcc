@@ -99,6 +99,8 @@ fn main() {
             salt,
             reverse,
         } => commands::cryptdecode(filename, password, salt, reverse),
+        Commands::Obscure { value } => commands::obscure(value),
+        Commands::Reveal { value } => commands::reveal(value),
         #[cfg(feature = "mount")]
         Commands::Mount {
             dir,

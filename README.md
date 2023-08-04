@@ -53,6 +53,10 @@ Cross-compilation is possible, as long as you're not trying to compile with the 
     - Same as [rclone's `cryptdecode`](https://rclone.org/commands/rclone_cryptdecode/).
     - **Notes**: Unlike `rclone`, this command does not require a path (or in fact any kind of access) to
     the encrypted directory. It just needs the password and (optionally) the salt.
+- obscure
+    - Same as [rclone's `obscure`](https://rclone.org/commands/rclone_obscure/).
+- reveal
+    - Reveals an obscured password.
 - lsd
     - Same as [rclone's `lsd`](https://rclone.org/commands/rclone_lsd/) but *without* support for recursing.
 - mount
