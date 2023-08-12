@@ -39,7 +39,7 @@ pub fn mount(
         return 1;
     }
 
-    let volname = volname.unwrap_or(gen_volume_name(&dir));
+    let volname = volname.unwrap_or_else(|| gen_volume_name(&dir));
     if !volname
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '-')
@@ -55,13 +55,14 @@ pub fn mount(
         OsString::from("-f"),
         OsString::from("-d"),
         OsString::from("-o"),
-        OsString::from(format!("volname={}", volname)),
+        OsString::from(format!("volname={volname}")),
     ];
 
     if read_only {
         opts.extend(vec![OsString::from("-o"), OsString::from("ro")]);
     }
 
+    #[allow(clippy::items_after_statements)]
     static mut FS: CryptFs = CryptFs {
         origin_path: None,
         cipher: None,
@@ -69,8 +70,8 @@ pub fn mount(
     };
     unsafe {
         FS.cipher = Some(cipher);
-        FS.origin_path = Some(dir)
-    };
+        FS.origin_path = Some(dir);
+    }
 
     unsafe {
         fuse_rs::mount(
@@ -125,7 +126,10 @@ impl CryptFs {
     /// `to` - "Fake" (decrypted) file/path
     /// If `to` starts with a `/`, it will be stripped.
     fn get_decrypted_path<P: AsRef<Path>>(&self, to: P) -> PathBuf {
-        let to = to.as_ref().strip_prefix("/").unwrap_or(to.as_ref());
+        let to = to
+            .as_ref()
+            .strip_prefix("/")
+            .unwrap_or_else(|_| to.as_ref());
         let to = self.get_cipher().decrypt_path(to).unwrap();
         self.real_path(to)
     }
