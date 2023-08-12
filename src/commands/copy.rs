@@ -3,7 +3,6 @@ use rclone_crypt::{
     cipher::Cipher,
     stream::{EncryptedReader, EncryptedWriter},
 };
-use spinoff::{spinners, Color, Spinner};
 use std::{
     fs,
     io::{Read, Write},
@@ -35,16 +34,13 @@ pub fn cp(
             return 1;
         }
 
-        let spinner = Spinner::new(spinners::Dots, "Checking paths...", Color::White);
         let encrypted_path = cipher.encrypt_path(&file).unwrap();
         let real_path = dir.join(encrypted_path);
 
         if !real_path.is_file() {
-            spinner.fail(&format!("File '{}' does not exist", file.display()));
+            eprintln!("File '{}' does not exist", file.display());
             return 1;
         }
-
-        spinner.success("Paths verified");
 
         copy_from_encrypted_dir(dir, file, dest, cipher, move_)
     } else {
@@ -54,23 +50,18 @@ pub fn cp(
         let dest = file;
 
         if !dir.is_dir() {
-            eprintln!("invalid directory");
+            eprintln!("Invalid directory");
             return 1;
         }
 
-        let spinner = Spinner::new(spinners::Dots, "Checking paths...", Color::White);
         let encrypted_path = cipher.encrypt_path(&dest).unwrap();
         let real_path = dir.join(encrypted_path);
 
         if real_path.is_file() {
-            spinner.fail(&format!(
-                "File '{}' alredy exists, not overwriting",
-                dest.display()
-            ));
+            eprintln!("File '{}' alredy exists, not overwriting", dest.display());
             return 1;
         }
 
-        spinner.success("Paths verified");
         copy_into_encrypted_dir(dir, dest, src, cipher, move_)
     }
 }
@@ -98,13 +89,9 @@ fn copy_from_encrypted_dir(
             .unwrap();
         let mut reader = EncryptedReader::new_with_cipher(src, cipher).unwrap();
 
-        let spinner = Spinner::new(spinners::Dots, "Copying...", Color::White);
-
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf).unwrap();
         dest.write_all(&buf).unwrap();
-
-        spinner.success("Done");
     }
 
     if move_ {
@@ -137,13 +124,9 @@ fn copy_into_encrypted_dir(
             .unwrap();
         let mut writer = EncryptedWriter::new_with_cipher(dest, cipher).unwrap();
 
-        let spinner = Spinner::new(spinners::Dots, "Copying...", Color::White);
-
         let mut buf = Vec::new();
         src.read_to_end(&mut buf).unwrap();
         writer.write_all(&buf).unwrap();
-
-        spinner.success("Done");
     }
 
     if move_ {
@@ -157,12 +140,10 @@ fn copy_into_encrypted_dir(
 }
 
 fn delete_file(path: PathBuf) -> i32 {
-    let spinner = Spinner::new(spinners::Dots, "Deleting...", Color::White);
     if let Err(e) = fs::remove_file(path) {
-        spinner.fail(&format!("Failed to move file: {e}"));
+        eprintln!("Failed to move file: {e}");
         return 1;
     }
-    spinner.success("Moved");
 
     0
 }

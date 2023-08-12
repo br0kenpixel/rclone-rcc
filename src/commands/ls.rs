@@ -1,6 +1,5 @@
 use crate::macros::create_cipher;
 use rclone_crypt::cipher::Cipher;
-use spinoff::{spinners, Color, Spinner};
 use std::{fs, path::PathBuf};
 
 pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
@@ -9,10 +8,7 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         return 1;
     }
     let salt = salt.as_deref();
-
     create_cipher!(cipher, &password, salt);
-
-    let spinner = Spinner::new(spinners::Dots, "Decrypting file names...", Color::White);
 
     let files_iter = fs::read_dir(&dir)
         .unwrap()
@@ -25,15 +21,13 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         let decrypted_name = match cipher.decrypt_file_name(&entry) {
             Ok(name) => name,
             Err(e) => {
-                spinner.fail(&format!("Failed to decrypt \"{}\": {}", entry, e));
+                eprintln!("Failed to decrypt \"{}\": {}", entry, e);
                 return 1;
             }
         };
 
         files.push((dir.join(entry), decrypted_name));
     }
-
-    spinner.success("Listing");
 
     for file in files {
         let real_path = file.0;

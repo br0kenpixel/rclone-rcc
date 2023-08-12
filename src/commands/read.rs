@@ -1,6 +1,5 @@
 use crate::macros::create_cipher;
 use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
-use spinoff::{spinners, Color, Spinner};
 use std::{
     fs,
     io::{stdout, Read, Write},
@@ -20,15 +19,13 @@ pub fn read(
         return 1;
     }
     let salt = salt.as_deref();
-
     create_cipher!(cipher, &password, salt);
 
-    let spinner = Spinner::new(spinners::Dots, "Decrypting...", Color::White);
     let encrypted_path = cipher.encrypt_path(&file).unwrap();
     let real_path = dir.join(encrypted_path);
 
     if !real_path.is_file() {
-        spinner.fail(&format!("File '{}' does not exist", file.display()));
+        eprintln!("File '{}' does not exist", file.display());
         return 1;
     }
 
@@ -37,18 +34,14 @@ pub fn read(
 
     let mut buf = Vec::new();
     reader.read_to_end(&mut buf).unwrap();
-    spinner.success("Decrypted successfully");
-
-    let spinner = Spinner::new(spinners::Dots, "Reading...", Color::White);
 
     let part = match buf.get(offset..(offset + amount)) {
         Some(part) => part,
         None => {
-            spinner.fail("Indexes are outside bounds");
+            eprintln!("Indexes are outside bounds");
             return 1;
         }
     };
-    spinner.success("Read");
 
     stdout().write_all(part).unwrap();
     0

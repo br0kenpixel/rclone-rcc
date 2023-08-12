@@ -1,6 +1,5 @@
 use crate::macros::create_cipher;
 use rclone_crypt::cipher::Cipher;
-use spinoff::{spinners, Color, Spinner};
 use std::path::PathBuf;
 
 pub fn cryptdecode(

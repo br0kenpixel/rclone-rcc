@@ -6,7 +6,6 @@ use fuse_rs::{
 };
 use nix::{errno::Errno, fcntl::OFlag, sys::stat::SFlag};
 use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
-use spinoff::{spinners, Color, Spinner};
 use std::{
     ffi::OsString,
     fs::{self, File, OpenOptions},
@@ -31,12 +30,12 @@ pub fn mount(
     read_only: bool,
 ) -> i32 {
     if !dir.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
 
     if !mnt_point.is_dir() {
-        eprintln!("invalid mount point");
+        eprintln!("Invalid mount point");
         return 1;
     }
 
@@ -45,15 +44,12 @@ pub fn mount(
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '-')
     {
-        eprintln!("invalid volume name '{volname}'");
+        eprintln!("Invalid volume name '{volname}'");
         return 1;
     }
 
     create_cipher!(cipher, &password, salt.as_deref());
-
-    let spinner = Spinner::new(spinners::Dots, "Mounting...", Color::White);
     let mnt_point = mnt_point.canonicalize().unwrap();
-
     let mut opts = vec![
         OsString::from("-s"),
         OsString::from("-f"),
@@ -75,7 +71,6 @@ pub fn mount(
         FS.cipher = Some(cipher);
         FS.origin_path = Some(dir)
     };
-    spinner.success("Mounted");
 
     unsafe {
         fuse_rs::mount(

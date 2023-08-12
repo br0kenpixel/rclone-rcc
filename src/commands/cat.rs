@@ -1,6 +1,5 @@
 use crate::macros::create_cipher;
 use rclone_crypt::{cipher::Cipher, stream::EncryptedReader};
-use spinoff::{spinners, Color, Spinner};
 use std::{
     fs,
     io::{stdout, Read, Write},
@@ -16,12 +15,11 @@ pub fn cat(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) 
 
     create_cipher!(cipher, &password, salt);
 
-    let spinner = Spinner::new(spinners::Dots, "Decrypting...", Color::White);
     let encrypted_path = cipher.encrypt_path(&file).unwrap();
     let real_path = dir.join(encrypted_path);
 
     if !real_path.is_file() {
-        spinner.fail(&format!("File '{}' does not exist", file.display()));
+        eprintln!("File '{}' does not exist", file.display());
         return 1;
     }
 
@@ -30,7 +28,6 @@ pub fn cat(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) 
 
     let mut buf = Vec::new();
     reader.read_to_end(&mut buf).unwrap();
-    spinner.success("Decrypted successfully");
 
     stdout().write_all(&buf).unwrap();
     0

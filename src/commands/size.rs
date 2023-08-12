@@ -1,20 +1,17 @@
-use spinoff::{spinners, Color, Spinner};
 use std::{fs, io, path::PathBuf};
 
 pub fn size(target: PathBuf) -> i32 {
     if !target.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
 
-    let spinner = Spinner::new(spinners::Dots, "Calculating...", Color::White);
     let Ok(result) = walk_dir(target) else {
-        spinner.fail("An I/O error occured while perfoming the calculation");
+        eprintln!("An I/O error occured while perfoming the calculation");
         return 1;
     };
     let nobjects = result.len() as u64;
     let total_size: u64 = result.iter().sum();
-    spinner.success("Done");
 
     println!(
         "Total objects: {} ({nobjects})",
