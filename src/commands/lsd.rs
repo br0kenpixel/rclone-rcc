@@ -5,7 +5,7 @@ use std::{fs, path::PathBuf};
 
 pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
     if !dir.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
     let salt = salt.as_deref();
@@ -22,7 +22,7 @@ pub fn lsd(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         let decrypted_name = match cipher.decrypt_file_name(&entry) {
             Ok(name) => name,
             Err(e) => {
-                eprintln!("Failed to decrypt \"{}\": {}", entry, e);
+                eprintln!("Failed to decrypt \"{entry}\": {e}");
                 return 1;
             }
         };

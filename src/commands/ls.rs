@@ -4,7 +4,7 @@ use std::{fs, path::PathBuf};
 
 pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
     if !dir.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
     let salt = salt.as_deref();
@@ -21,7 +21,7 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         let decrypted_name = match cipher.decrypt_file_name(&entry) {
             Ok(name) => name,
             Err(e) => {
-                eprintln!("Failed to decrypt \"{}\": {}", entry, e);
+                eprintln!("Failed to decrypt \"{entry}\": {e}");
                 return 1;
             }
         };
@@ -34,7 +34,7 @@ pub fn ls(dir: PathBuf, password: String, salt: Option<String>) -> i32 {
         let file = file.1;
         let size = fs::metadata(real_path).unwrap().len();
 
-        println!("{:>9} {file}", size);
+        println!("{size:>9} {file}");
     }
 
     0

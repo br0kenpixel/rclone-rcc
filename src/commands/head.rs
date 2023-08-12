@@ -7,7 +7,7 @@ pub fn head(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>,
     create_cipher!(cipher, &password, salt);
 
     if !dir.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
 

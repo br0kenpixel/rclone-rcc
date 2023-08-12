@@ -8,7 +8,7 @@ use std::{
 
 pub fn cat(dir: PathBuf, file: PathBuf, password: String, salt: Option<String>) -> i32 {
     if !dir.is_dir() {
-        eprintln!("invalid directory");
+        eprintln!("Invalid directory");
         return 1;
     }
     let salt = salt.as_deref();

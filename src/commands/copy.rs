@@ -30,7 +30,7 @@ pub fn cp(
         // Check if we can access the encrypted directory and the source file exists in it.
 
         if !dir.is_dir() {
-            eprintln!("invalid directory");
+            eprintln!("Invalid directory");
             return 1;
         }
 
