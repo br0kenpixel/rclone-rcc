@@ -52,7 +52,7 @@ fn pretty_format(count: u64, unit: Option<char>) -> String {
     let mut result = match count {
         0..=999 => format!("{count}"),
         1000..=999_999 => format!("{:.3}k", count as f32 / 1000.0),
-        1_000_000..=999999999 => format!("{:.3}M", count as f32 / exp(6)),
+        1_000_000..=999_999_999 => format!("{:.3}M", count as f32 / exp(6)),
         1_000_000_000..=999_999_999_999 => format!("{:.3}G", count as f32 / exp(9)),
         _ => format!("{:.3}T", count as f32 / exp(12)),
     };

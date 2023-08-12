@@ -1,3 +1,4 @@
+#![allow(clippy::cast_precision_loss, clippy::needless_pass_by_value)]
 mod args;
 mod commands;
 mod macros;

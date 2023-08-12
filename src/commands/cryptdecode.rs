@@ -17,14 +17,14 @@ pub fn cryptdecode(
         (cipher.decrypt_path(&filename), "decrypt")
     };
 
-    match result {
-        Ok(result) => {
-            println!("{}\t{}", filename.display(), result.display());
-            0
-        }
-        Err(_) => {
+    result.map_or_else(
+        |_| {
             eprintln!("{}\tFailed to {}", filename.display(), operation);
             1
-        }
-    }
+        },
+        |result| {
+            println!("{}\t{}", filename.display(), result.display());
+            0
+        },
+    )
 }

@@ -35,12 +35,9 @@ pub fn read(
     let mut buf = Vec::new();
     reader.read_to_end(&mut buf).unwrap();
 
-    let part = match buf.get(offset..(offset + amount)) {
-        Some(part) => part,
-        None => {
-            eprintln!("Indexes are outside bounds");
-            return 1;
-        }
+    let Some(part) = buf.get(offset..(offset + amount)) else {
+        eprintln!("Indexes are outside bounds");
+        return 1;
     };
 
     stdout().write_all(part).unwrap();

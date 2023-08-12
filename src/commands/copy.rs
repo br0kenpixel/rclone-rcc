@@ -26,24 +26,7 @@ pub fn cp(
     let salt = salt.as_deref();
     create_cipher!(cipher, &password, salt);
 
-    if !reverse {
-        // Check if we can access the encrypted directory and the source file exists in it.
-
-        if !dir.is_dir() {
-            eprintln!("Invalid directory");
-            return 1;
-        }
-
-        let encrypted_path = cipher.encrypt_path(&file).unwrap();
-        let real_path = dir.join(encrypted_path);
-
-        if !real_path.is_file() {
-            eprintln!("File '{}' does not exist", file.display());
-            return 1;
-        }
-
-        copy_from_encrypted_dir(dir, file, dest, cipher, move_)
-    } else {
+    if reverse {
         // Check if the encrypted directory exists as well as the source file.
 
         let src = dest;
@@ -63,6 +46,23 @@ pub fn cp(
         }
 
         copy_into_encrypted_dir(dir, dest, src, cipher, move_)
+    } else {
+        // Check if we can access the encrypted directory and the source file exists in it.
+
+        if !dir.is_dir() {
+            eprintln!("Invalid directory");
+            return 1;
+        }
+
+        let encrypted_path = cipher.encrypt_path(&file).unwrap();
+        let real_path = dir.join(encrypted_path);
+
+        if !real_path.is_file() {
+            eprintln!("File '{}' does not exist", file.display());
+            return 1;
+        }
+
+        copy_from_encrypted_dir(dir, file, dest, cipher, move_)
     }
 }
 
